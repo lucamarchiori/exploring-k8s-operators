@@ -1,0 +1,27 @@
+# permissions for end users to edit tetris.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: tetris-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: tetris-editor-role
+rules:
+- apiGroups:
+  - cache.tetris-operator.secomind.com
+  resources:
+  - tetris
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - cache.tetris-operator.secomind.com
+  resources:
+  - tetris/status
+  verbs:
+  - get
