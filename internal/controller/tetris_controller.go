@@ -23,6 +23,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -82,6 +83,11 @@ func (r *TetrisReconciler) EnsureTetris(cr *cachev1alpha1.Tetris, client client.
 		fmt.Println("TetrisReconciler: Error CreateOrUpdate Deployment: ", err)
 	}
 
+	err = ensureNodePort(cr, client, appName, labels, matchLabels)
+	if err != nil {
+		fmt.Println("TetrisReconciler: Error CreateOrUpdate NodePort: ", err)
+	}
+
 }
 
 // SetupWithManager sets up the controller with the Manager.
@@ -89,6 +95,35 @@ func (r *TetrisReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&cachev1alpha1.Tetris{}).
 		Complete(r)
+}
+
+func ensureNodePort(cr *cachev1alpha1.Tetris, client client.Client, appName string, labels map[string]string, matchLabels map[string]string) error {
+	nodePortName := fmt.Sprintf("%s-nodeport", appName)
+	nodePort := &v1.Service{ObjectMeta: metav1.ObjectMeta{Name: nodePortName, Namespace: cr.Namespace}}
+
+	_, err := ctrl.CreateOrUpdate(context.Background(), client, nodePort, func() error {
+		fmt.Println("TetrisReconciler: CreateOrUpdate NodePort")
+		nodePort.ObjectMeta.Labels = labels
+		nodePort.Spec = v1.ServiceSpec{
+			Type:     "NodePort",
+			Selector: matchLabels,
+			Ports: []v1.ServicePort{{
+				Port:       80,
+				TargetPort: intstr.FromInt(80),
+				NodePort:   int32(30000),
+			},
+			},
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+
 }
 
 func ensureDeployment(cr *cachev1alpha1.Tetris, client client.Client, appName string, labels map[string]string, matchLabels map[string]string) error {
