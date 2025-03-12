@@ -18,7 +18,6 @@ package controller
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	v1 "k8s.io/api/core/v1"
@@ -71,26 +70,16 @@ func (r *TetrisReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 }
 
 func (r *TetrisReconciler) EnsureTetris(cr *cachev1alpha1.Tetris, client client.Client, scheme *runtime.Scheme) {
+	var err error
+
 	fmt.Println("TetrisReconciler: Ensure Tetris")
-	deploymentName := "tetris-deployment"
-	labels := map[string]string{
-		"app": deploymentName,
-	}
-	matchLabels := map[string]string{"app": deploymentName}
+	appName := "tetris"
+	labels := map[string]string{"app": appName}
+	matchLabels := map[string]string{"app": appName}
 
-	deployment := &appsv1.Deployment{ObjectMeta: metav1.ObjectMeta{Name: deploymentName, Namespace: cr.Namespace}}
-
-	_, err := ctrl.CreateOrUpdate(context.Background(), client, deployment, func() error {
-		fmt.Println("TetrisReconciler: CreateOrUpdate Deployment")
-		deployment.ObjectMeta.Labels = labels
-		deployment.Spec = tetrisDeploymentSpec(cr, matchLabels, *cr.Spec.Replicas)
-		by, _ := json.Marshal(deployment)
-		fmt.Println(string(by))
-		return nil
-	})
-
+	err = ensureDeployment(cr, client, appName, labels, matchLabels)
 	if err != nil {
-		fmt.Println("TetrisReconciler: Error CreateOrUpdate Deployment", err)
+		fmt.Println("TetrisReconciler: Error CreateOrUpdate Deployment: ", err)
 	}
 
 }
@@ -102,7 +91,25 @@ func (r *TetrisReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func tetrisDeploymentSpec(cr *cachev1alpha1.Tetris, matchLabels map[string]string, instances int32) (deploymentSpec appsv1.DeploymentSpec) {
+func ensureDeployment(cr *cachev1alpha1.Tetris, client client.Client, appName string, labels map[string]string, matchLabels map[string]string) error {
+	deploymentName := fmt.Sprintf("%s-deployment", appName)
+	deployment := &appsv1.Deployment{ObjectMeta: metav1.ObjectMeta{Name: deploymentName, Namespace: cr.Namespace}}
+
+	_, err := ctrl.CreateOrUpdate(context.Background(), client, deployment, func() error {
+		fmt.Println("TetrisReconciler: CreateOrUpdate Deployment")
+		deployment.ObjectMeta.Labels = labels
+		deployment.Spec = tetrisDeploymentSpec(matchLabels, *cr.Spec.Replicas)
+		return nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func tetrisDeploymentSpec(matchLabels map[string]string, instances int32) (deploymentSpec appsv1.DeploymentSpec) {
 	fmt.Println("TetrisReconciler: Tetris Deployment Spec")
 	deploymentSpec = appsv1.DeploymentSpec{
 		Selector: &metav1.LabelSelector{
@@ -110,7 +117,7 @@ func tetrisDeploymentSpec(cr *cachev1alpha1.Tetris, matchLabels map[string]strin
 		},
 		Replicas: &instances,
 		Template: v1.PodTemplateSpec{
-			Spec: tetrisPodSpec(cr),
+			Spec: tetrisPodSpec(),
 			ObjectMeta: metav1.ObjectMeta{
 				Labels: matchLabels,
 			},
@@ -120,7 +127,7 @@ func tetrisDeploymentSpec(cr *cachev1alpha1.Tetris, matchLabels map[string]strin
 	return deploymentSpec
 }
 
-func tetrisPodSpec(cr *cachev1alpha1.Tetris) (podSpec v1.PodSpec) {
+func tetrisPodSpec() (podSpec v1.PodSpec) {
 	fmt.Println("TetrisReconciler: Tetris Pod Spec")
 	podSpec = v1.PodSpec{
 		Containers: []v1.Container{
