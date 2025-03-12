@@ -70,7 +70,7 @@ func (r *TetrisReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	return ctrl.Result{}, nil
 }
 
-func (r *TetrisReconciler) EnsureTetris(cr *cachev1alpha1.Tetris, client client.Client, scheme *runtime.Scheme) {
+func (r *TetrisReconciler) EnsureTetris(cr *cachev1alpha1.Tetris, cl client.Client, scheme *runtime.Scheme) {
 	var err error
 
 	fmt.Println("TetrisReconciler: Ensure Tetris")
@@ -78,14 +78,25 @@ func (r *TetrisReconciler) EnsureTetris(cr *cachev1alpha1.Tetris, client client.
 	labels := map[string]string{"app": appName}
 	matchLabels := map[string]string{"app": appName}
 
-	err = ensureDeployment(cr, client, appName, labels, matchLabels)
+	err = ensureDeployment(cr, cl, appName, labels, matchLabels)
 	if err != nil {
 		fmt.Println("TetrisReconciler: Error CreateOrUpdate Deployment: ", err)
 	}
 
-	err = ensureNodePort(cr, client, appName, labels, matchLabels)
-	if err != nil {
-		fmt.Println("TetrisReconciler: Error CreateOrUpdate NodePort: ", err)
+	if cr.Spec.EnableNodePort {
+		err = ensureNodePort(cr, cl, appName, labels, matchLabels)
+		if err != nil {
+			fmt.Println("TetrisReconciler: Error CreateOrUpdate NodePort: ", err)
+		}
+	} else {
+		// Find the NodePort matching labels and if found delete it
+		nodePort := &v1.Service{ObjectMeta: metav1.ObjectMeta{Name: fmt.Sprintf("%s-nodeport", appName), Namespace: cr.Namespace}}
+		err = cl.Delete(context.Background(), nodePort)
+		if err != nil {
+			fmt.Println("TetrisReconciler: Error deleting NodePort: ", err)
+		} else {
+			fmt.Println("TetrisReconciler: Successfully deleted NodePort")
+		}
 	}
 
 }
