@@ -19,6 +19,7 @@ package controller
 import (
 	"context"
 	"fmt"
+	"time"
 
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
@@ -67,8 +68,9 @@ func (r *TetrisReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	}
 
 	r.EnsureTetris(instance, r.Client, r.Scheme)
+	// Reconcile every 10 seconds
+	return ctrl.Result{RequeueAfter: time.Second * 10}, err
 
-	return ctrl.Result{}, nil
 }
 
 func (r *TetrisReconciler) EnsureTetris(cr *cachev1alpha1.Tetris, cl client.Client, scheme *runtime.Scheme) (err error) {
@@ -223,6 +225,13 @@ func ensureNodePort(cr *cachev1alpha1.Tetris, client client.Client, appName stri
 	nodePortName := fmt.Sprintf("%s-nodeport", appName)
 	nodePort := &v1.Service{ObjectMeta: metav1.ObjectMeta{Name: nodePortName, Namespace: cr.Namespace}}
 
+	// Set default port if not specified, otherwise assign the custom one
+	nodePortValue := int32(30000)
+	fmt.Println(cr.Spec.NodePortValue)
+	if cr.Spec.NodePortValue != nil {
+		nodePortValue = int32(*cr.Spec.NodePortValue)
+	}
+
 	_, err := ctrl.CreateOrUpdate(context.Background(), client, nodePort, func() error {
 		fmt.Println("TetrisReconciler: CreateOrUpdate NodePort")
 		nodePort.ObjectMeta.Labels = labels
@@ -232,7 +241,7 @@ func ensureNodePort(cr *cachev1alpha1.Tetris, client client.Client, appName stri
 			Ports: []v1.ServicePort{{
 				Port:       80,
 				TargetPort: intstr.FromInt(80),
-				NodePort:   int32(30000),
+				NodePort:   nodePortValue,
 			},
 			},
 		}

@@ -29,6 +29,10 @@ type TetrisSpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 	// +kubebuilder:validation:Required
 	EnableNodePort bool `json:"enableNodePort,omitempty"`
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:validation:Minimum:=30000
+	// +kubebuilder:validation:Maximum:=32767
+	NodePortValue *int32 `json:"nodePortValue,omitempty"`
 	// +kubebuilder:validation:Required
 	Replicas *int32 `json:"replicas,omitempty"`
 	// +kubebuilder:validation:Required

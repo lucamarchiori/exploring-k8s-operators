@@ -46,6 +46,11 @@ spec:
                   INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
                   Important: Run "make" to regenerate code after modifying this file
                 type: boolean
+              nodePortValue:
+                format: int32
+                maximum: 32767
+                minimum: 30000
+                type: integer
               replicas:
                 format: int32
                 type: integer

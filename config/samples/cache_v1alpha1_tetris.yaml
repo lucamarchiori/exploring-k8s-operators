@@ -8,4 +8,5 @@ metadata:
 spec:
   replicas: 3
   enableNodePort: false
+  nodePortValue: 30003
   domain: customtetrisdomain.nip.io
