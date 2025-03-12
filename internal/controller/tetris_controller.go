@@ -71,15 +71,21 @@ func (r *TetrisReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	return ctrl.Result{}, nil
 }
 
-func (r *TetrisReconciler) EnsureTetris(cr *cachev1alpha1.Tetris, cl client.Client, scheme *runtime.Scheme) error {
+func (r *TetrisReconciler) EnsureTetris(cr *cachev1alpha1.Tetris, cl client.Client, scheme *runtime.Scheme) (err error) {
 	fmt.Println("TetrisReconciler: Ensure Tetris")
 	appName := "tetris"
 	labels := map[string]string{"app": appName}
 	matchLabels := map[string]string{"app": appName}
 
-	err := ensureDeployment(cr, cl, appName, labels, matchLabels)
+	err = ensureDeployment(cr, cl, appName, labels, matchLabels)
 	if err != nil {
 		fmt.Println("TetrisReconciler: Error creating or updating Deployment:", err)
+		return err
+	}
+
+	err = r.EnsureClusterIp(cr, cl, appName, labels, matchLabels)
+	if err != nil {
+		fmt.Println("TetrisReconciler: Error creating or updating ClusterIp:", err)
 		return err
 	}
 
@@ -100,8 +106,38 @@ func (r *TetrisReconciler) EnsureTetris(cr *cachev1alpha1.Tetris, cl client.Clie
 	return nil
 }
 
+func (r *TetrisReconciler) EnsureClusterIp(cr *cachev1alpha1.Tetris, cl client.Client, appName string, labels map[string]string, matchLabels map[string]string) error {
+	clusterIpName := fmt.Sprintf("%s-clusterip", appName)
+	clusterIp := &v1.Service{ObjectMeta: metav1.ObjectMeta{Name: clusterIpName, Namespace: cr.Namespace}}
+
+	_, err := ctrl.CreateOrUpdate(context.Background(), cl, clusterIp, func() error {
+		fmt.Println("TetrisReconciler: CreateOrUpdate NodePort")
+		clusterIp.ObjectMeta.Labels = labels
+		clusterIp.Spec = v1.ServiceSpec{
+			Type:     "ClusterIP",
+			Selector: matchLabels,
+			Ports: []v1.ServicePort{{
+				Protocol:   "TCP",
+				Port:       80,
+				TargetPort: intstr.FromInt(80),
+			},
+			},
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
 func deleteNodePort(cr *cachev1alpha1.Tetris, cl client.Client, appName string) error {
-	nodePort := &v1.Service{ObjectMeta: metav1.ObjectMeta{Name: fmt.Sprintf("%s-nodeport", appName), Namespace: cr.Namespace}}
+	nodePortName := fmt.Sprintf("%s-nodeport", appName)
+	nodePort := &v1.Service{ObjectMeta: metav1.ObjectMeta{Name: nodePortName, Namespace: cr.Namespace}}
 	err := cl.Delete(context.Background(), nodePort)
 	if err != nil && !errors.IsNotFound(err) {
 		return err
