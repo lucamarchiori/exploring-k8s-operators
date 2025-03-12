@@ -27,9 +27,12 @@ import (
 type TetrisSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-
-	EnableNodePort bool   `json:"enableNodePort,omitempty"`
-	Replicas       *int32 `json:"replicas,omitempty"`
+	// +kubebuilder:validation:Required
+	EnableNodePort bool `json:"enableNodePort,omitempty"`
+	// +kubebuilder:validation:Required
+	Replicas *int32 `json:"replicas,omitempty"`
+	// +kubebuilder:validation:Required
+	Domain *string `json:"domain,omitempty"`
 }
 
 // TetrisStatus defines the observed state of Tetris
@@ -37,6 +40,7 @@ type TetrisStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this filek de
 	// Crea status custome che tiene d'occhio repliche e host su cui è esposto ingress
+	NodePortEnabled bool `json:"nodePortEnabled,omitempty"`
 }
 
 // +kubebuilder:object:root=true

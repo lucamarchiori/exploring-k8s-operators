@@ -101,12 +101,14 @@ func (r *TetrisReconciler) EnsureTetris(cr *cachev1alpha1.Tetris, cl client.Clie
 			fmt.Println("TetrisReconciler: Error creating or updating NodePort:", err)
 			return err
 		}
+		cr.Status.NodePortEnabled = true
 	} else {
 		err = deleteNodePort(cr, cl, appName)
 		if err != nil {
 			fmt.Println("TetrisReconciler: Error deleting NodePort:", err)
 			return err
 		}
+		cr.Status.NodePortEnabled = false
 	}
 
 	return nil
@@ -115,6 +117,12 @@ func (r *TetrisReconciler) EnsureTetris(cr *cachev1alpha1.Tetris, cl client.Clie
 func (r *TetrisReconciler) ensureIngress(cr *cachev1alpha1.Tetris, cl client.Client, appName string, labels map[string]string) error {
 	ingressName := fmt.Sprintf("%s-ingress", appName)
 	ingress := &networkingv1.Ingress{ObjectMeta: metav1.ObjectMeta{Name: ingressName, Namespace: cr.Namespace}}
+
+	if cr.Spec.Domain == nil {
+		return fmt.Errorf("Domain name not defined")
+	}
+
+	domain := *cr.Spec.Domain
 
 	var className string = "ngnix"
 	pathType := networkingv1.PathTypePrefix
@@ -125,14 +133,14 @@ func (r *TetrisReconciler) ensureIngress(cr *cachev1alpha1.Tetris, cl client.Cli
 		ingress.Spec = networkingv1.IngressSpec{
 			TLS: []networkingv1.IngressTLS{
 				{
-					Hosts:      []string{"customtetrisdomain.com"},
+					Hosts:      []string{domain},
 					SecretName: "tetris-secret",
 				},
 			},
 			IngressClassName: &className,
 			Rules: []networkingv1.IngressRule{
 				{
-					Host: "customtetrisdomain.com",
+					Host: domain,
 					IngressRuleValue: networkingv1.IngressRuleValue{
 						HTTP: &networkingv1.HTTPIngressRuleValue{
 							Paths: []networkingv1.HTTPIngressPath{
