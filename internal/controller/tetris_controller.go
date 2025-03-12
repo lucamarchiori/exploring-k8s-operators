@@ -20,7 +20,9 @@ import (
 	"context"
 	"fmt"
 
+	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
+	networkingv1 "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -28,8 +30,6 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
-
-	appsv1 "k8s.io/api/apps/v1"
 	cachev1alpha1 "tetris-operator.github.com/api/v1alpha1"
 )
 
@@ -89,6 +89,12 @@ func (r *TetrisReconciler) EnsureTetris(cr *cachev1alpha1.Tetris, cl client.Clie
 		return err
 	}
 
+	err = r.ensureIngress(cr, cl, appName, labels)
+	if err != nil {
+		fmt.Println("TetrisReconciler: Error creating or updating Ingress:", err)
+		return err
+	}
+
 	if cr.Spec.EnableNodePort {
 		err = ensureNodePort(cr, cl, appName, labels, matchLabels)
 		if err != nil {
@@ -101,6 +107,58 @@ func (r *TetrisReconciler) EnsureTetris(cr *cachev1alpha1.Tetris, cl client.Clie
 			fmt.Println("TetrisReconciler: Error deleting NodePort:", err)
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (r *TetrisReconciler) ensureIngress(cr *cachev1alpha1.Tetris, cl client.Client, appName string, labels map[string]string) error {
+	ingressName := fmt.Sprintf("%s-ingress", appName)
+	ingress := &networkingv1.Ingress{ObjectMeta: metav1.ObjectMeta{Name: ingressName, Namespace: cr.Namespace}}
+
+	var className string = "ngnix"
+	pathType := networkingv1.PathTypePrefix
+
+	_, err := ctrl.CreateOrUpdate(context.Background(), cl, ingress, func() error {
+		fmt.Println("TetrisReconciler: CreateOrUpdate Ingress")
+		ingress.ObjectMeta.Labels = labels
+		ingress.Spec = networkingv1.IngressSpec{
+			TLS: []networkingv1.IngressTLS{
+				{
+					Hosts:      []string{"customtetrisdomain.com"},
+					SecretName: "tetris-secret",
+				},
+			},
+			IngressClassName: &className,
+			Rules: []networkingv1.IngressRule{
+				{
+					Host: "customtetrisdomain.com",
+					IngressRuleValue: networkingv1.IngressRuleValue{
+						HTTP: &networkingv1.HTTPIngressRuleValue{
+							Paths: []networkingv1.HTTPIngressPath{
+								{
+									Path:     "/",
+									PathType: &pathType,
+									Backend: networkingv1.IngressBackend{
+										Service: &networkingv1.IngressServiceBackend{
+											Name: "service-tetris",
+											Port: networkingv1.ServiceBackendPort{
+												Number: 80,
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		}
+		return nil
+	})
+
+	if err != nil {
+		return err
 	}
 
 	return nil
