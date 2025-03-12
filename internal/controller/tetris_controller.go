@@ -83,7 +83,7 @@ func (r *TetrisReconciler) EnsureTetris(cr *cachev1alpha1.Tetris, cl client.Clie
 		return err
 	}
 
-	err = r.EnsureClusterIp(cr, cl, appName, labels, matchLabels)
+	err = r.ensureClusterIp(cr, cl, appName, labels, matchLabels)
 	if err != nil {
 		fmt.Println("TetrisReconciler: Error creating or updating ClusterIp:", err)
 		return err
@@ -106,7 +106,7 @@ func (r *TetrisReconciler) EnsureTetris(cr *cachev1alpha1.Tetris, cl client.Clie
 	return nil
 }
 
-func (r *TetrisReconciler) EnsureClusterIp(cr *cachev1alpha1.Tetris, cl client.Client, appName string, labels map[string]string, matchLabels map[string]string) error {
+func (r *TetrisReconciler) ensureClusterIp(cr *cachev1alpha1.Tetris, cl client.Client, appName string, labels map[string]string, matchLabels map[string]string) error {
 	clusterIpName := fmt.Sprintf("%s-clusterip", appName)
 	clusterIp := &v1.Service{ObjectMeta: metav1.ObjectMeta{Name: clusterIpName, Namespace: cr.Namespace}}
 
