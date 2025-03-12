@@ -21,6 +21,7 @@ import (
 	"fmt"
 
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -70,35 +71,43 @@ func (r *TetrisReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	return ctrl.Result{}, nil
 }
 
-func (r *TetrisReconciler) EnsureTetris(cr *cachev1alpha1.Tetris, cl client.Client, scheme *runtime.Scheme) {
-	var err error
-
+func (r *TetrisReconciler) EnsureTetris(cr *cachev1alpha1.Tetris, cl client.Client, scheme *runtime.Scheme) error {
 	fmt.Println("TetrisReconciler: Ensure Tetris")
 	appName := "tetris"
 	labels := map[string]string{"app": appName}
 	matchLabels := map[string]string{"app": appName}
 
-	err = ensureDeployment(cr, cl, appName, labels, matchLabels)
+	err := ensureDeployment(cr, cl, appName, labels, matchLabels)
 	if err != nil {
-		fmt.Println("TetrisReconciler: Error CreateOrUpdate Deployment: ", err)
+		fmt.Println("TetrisReconciler: Error creating or updating Deployment:", err)
+		return err
 	}
 
 	if cr.Spec.EnableNodePort {
 		err = ensureNodePort(cr, cl, appName, labels, matchLabels)
 		if err != nil {
-			fmt.Println("TetrisReconciler: Error CreateOrUpdate NodePort: ", err)
+			fmt.Println("TetrisReconciler: Error creating or updating NodePort:", err)
+			return err
 		}
 	} else {
-		// Find the NodePort matching labels and if found delete it
-		nodePort := &v1.Service{ObjectMeta: metav1.ObjectMeta{Name: fmt.Sprintf("%s-nodeport", appName), Namespace: cr.Namespace}}
-		err = cl.Delete(context.Background(), nodePort)
+		err = deleteNodePort(cr, cl, appName)
 		if err != nil {
-			fmt.Println("TetrisReconciler: Error deleting NodePort: ", err)
-		} else {
-			fmt.Println("TetrisReconciler: Successfully deleted NodePort")
+			fmt.Println("TetrisReconciler: Error deleting NodePort:", err)
+			return err
 		}
 	}
 
+	return nil
+}
+
+func deleteNodePort(cr *cachev1alpha1.Tetris, cl client.Client, appName string) error {
+	nodePort := &v1.Service{ObjectMeta: metav1.ObjectMeta{Name: fmt.Sprintf("%s-nodeport", appName), Namespace: cr.Namespace}}
+	err := cl.Delete(context.Background(), nodePort)
+	if err != nil && !errors.IsNotFound(err) {
+		return err
+	}
+	fmt.Println("TetrisReconciler: Successfully deleted NodePort")
+	return nil
 }
 
 // SetupWithManager sets up the controller with the Manager.

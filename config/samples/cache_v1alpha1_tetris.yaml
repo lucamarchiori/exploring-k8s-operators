@@ -7,4 +7,4 @@ metadata:
   name: tetris-sample
 spec:
   replicas: 3
-  enableNodePort: true
+  enableNodePort: false
