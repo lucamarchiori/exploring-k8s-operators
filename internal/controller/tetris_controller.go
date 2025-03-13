@@ -19,7 +19,6 @@ package controller
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"go.openly.dev/pointy"
 	appsv1 "k8s.io/api/apps/v1"
@@ -69,8 +68,11 @@ func (r *TetrisReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 	}
 
 	r.EnsureTetris(instance, r.Client, r.Scheme)
+
+	return ctrl.Result{}, nil
+
 	// Reconcile every 10 seconds
-	return ctrl.Result{RequeueAfter: time.Second * 10}, err
+	//return ctrl.Result{RequeueAfter: time.Second * 10}, err
 
 }
 
