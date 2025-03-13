@@ -231,7 +231,6 @@ func ensureNodePort(cr *cachev1alpha1.Tetris, client client.Client, appName stri
 
 	// Set default port if not specified, otherwise assign the custom one
 	nodePortValue := int32(30000)
-	fmt.Println(cr.Spec.NodePortValue)
 	if cr.Spec.NodePortValue != nil {
 		nodePortValue = int32(*cr.Spec.NodePortValue)
 	}
