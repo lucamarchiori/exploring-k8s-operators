@@ -28,6 +28,7 @@ type TetrisSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 	// +kubebuilder:validation:Optional
+	// +kubebuilder:default:=false
 	EnableNodePort *bool `json:"enableNodePort,omitempty"`
 	// +kubebuilder:validation:Optional
 	// +kubebuilder:validation:Minimum:=30000

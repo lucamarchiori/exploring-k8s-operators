@@ -7,6 +7,6 @@ metadata:
   name: tetris-sample
 spec:
   replicas: 3
-  enableNodePort: false
+  enableNodePort: true
   nodePortValue: 30003
   domain: customtetrisdomain.nip.io
