@@ -56,7 +56,6 @@ spec:
                 type: integer
             required:
             - domain
-            - enableNodePort
             - replicas
             type: object
           status:

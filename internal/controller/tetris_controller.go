@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"time"
 
+	"go.openly.dev/pointy"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
@@ -97,7 +98,8 @@ func (r *TetrisReconciler) EnsureTetris(cr *cachev1alpha1.Tetris, cl client.Clie
 		return err
 	}
 
-	if cr.Spec.EnableNodePort {
+	// NodePort disabled by default if not specified
+	if !pointy.BoolValue(cr.Spec.EnableNodePort, false) {
 		err = ensureNodePort(cr, cl, appName, labels, matchLabels)
 		if err != nil {
 			fmt.Println("TetrisReconciler: Error creating or updating NodePort:", err)
