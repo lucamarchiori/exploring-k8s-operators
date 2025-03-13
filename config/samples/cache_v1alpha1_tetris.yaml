@@ -9,4 +9,4 @@ spec:
   replicas: 3
   enableNodePort: true
   nodePortValue: 30003
-  domain: customtetrisdomain.nip.io
+  domain: customtetrisdomain.com

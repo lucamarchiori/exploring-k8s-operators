@@ -34,7 +34,8 @@ type TetrisSpec struct {
 	// +kubebuilder:validation:Minimum:=30000
 	// +kubebuilder:validation:Maximum:=32767
 	NodePortValue *int32 `json:"nodePortValue,omitempty"`
-	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default:=1
 	Replicas *int32 `json:"replicas,omitempty"`
 	// +kubebuilder:validation:Required
 	Domain *string `json:"domain,omitempty"`
