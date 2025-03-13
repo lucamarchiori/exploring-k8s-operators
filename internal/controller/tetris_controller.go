@@ -27,6 +27,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -221,11 +222,17 @@ func ensureNodePort(cr *cachev1alpha1.Tetris, c client.Client, appName string, l
 
 	// NodePort disabled by default if not specified in the CRD
 	if !pointy.BoolValue(cr.Spec.EnableNodePort, false) {
-		err = deleteNodePort(cr, c, appName)
-		if err != nil {
-			fmt.Println("TetrisReconciler: Error deleting NodePort:", err)
-			return err
+		// Check if NodePort exixts and delete it only if it does
+		np := &v1.Service{}
+		if err = c.Get(context.TODO(), types.NamespacedName{Name: nodePortName, Namespace: cr.Namespace}, np); err == nil {
+			fmt.Println("TetrisReconciler: Unwanted NodePort found")
+			err = deleteNodePort(cr, c, appName)
+			if err != nil {
+				fmt.Println("TetrisReconciler: Error deleting NodePort:", err)
+				return err
+			}
 		}
+
 		cr.Status.NodePortEnabled = false
 		return nil
 	}

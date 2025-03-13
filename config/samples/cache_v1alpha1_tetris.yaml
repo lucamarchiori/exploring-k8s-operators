@@ -7,6 +7,6 @@ metadata:
   name: tetris-sample
 spec:
   replicas: 3
-  enableNodePort: true
+  enableNodePort: false
   nodePortValue: 30003
   domain: customtetrisdomain.com
