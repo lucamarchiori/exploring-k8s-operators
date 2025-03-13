@@ -100,21 +100,10 @@ func (r *TetrisReconciler) EnsureTetris(cr *cachev1alpha1.Tetris, cl client.Clie
 		return err
 	}
 
-	// NodePort disabled by default if not specified
-	if !pointy.BoolValue(cr.Spec.EnableNodePort, false) {
-		err = ensureNodePort(cr, cl, appName, labels, matchLabels)
-		if err != nil {
-			fmt.Println("TetrisReconciler: Error creating or updating NodePort:", err)
-			return err
-		}
-		cr.Status.NodePortEnabled = true
-	} else {
-		err = deleteNodePort(cr, cl, appName)
-		if err != nil {
-			fmt.Println("TetrisReconciler: Error deleting NodePort:", err)
-			return err
-		}
-		cr.Status.NodePortEnabled = false
+	err = ensureNodePort(cr, cl, appName, labels, matchLabels)
+	if err != nil {
+		fmt.Println("TetrisReconciler: Error creating or updating NodePort:", err)
+		return err
 	}
 
 	return nil
@@ -225,9 +214,21 @@ func (r *TetrisReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func ensureNodePort(cr *cachev1alpha1.Tetris, client client.Client, appName string, labels map[string]string, matchLabels map[string]string) error {
+func ensureNodePort(cr *cachev1alpha1.Tetris, c client.Client, appName string, labels map[string]string, matchLabels map[string]string) (err error) {
+
 	nodePortName := fmt.Sprintf("%s-nodeport", appName)
 	nodePort := &v1.Service{ObjectMeta: metav1.ObjectMeta{Name: nodePortName, Namespace: cr.Namespace}}
+
+	// NodePort disabled by default if not specified in the CRD
+	if !pointy.BoolValue(cr.Spec.EnableNodePort, false) {
+		err = deleteNodePort(cr, c, appName)
+		if err != nil {
+			fmt.Println("TetrisReconciler: Error deleting NodePort:", err)
+			return err
+		}
+		cr.Status.NodePortEnabled = false
+		return nil
+	}
 
 	// Set default port if not specified, otherwise assign the custom one
 	nodePortValue := int32(30000)
@@ -235,7 +236,7 @@ func ensureNodePort(cr *cachev1alpha1.Tetris, client client.Client, appName stri
 		nodePortValue = int32(*cr.Spec.NodePortValue)
 	}
 
-	_, err := ctrl.CreateOrUpdate(context.Background(), client, nodePort, func() error {
+	_, err = ctrl.CreateOrUpdate(context.Background(), c, nodePort, func() error {
 		fmt.Println("TetrisReconciler: CreateOrUpdate NodePort")
 		nodePort.ObjectMeta.Labels = labels
 		nodePort.Spec = v1.ServiceSpec{
@@ -249,6 +250,7 @@ func ensureNodePort(cr *cachev1alpha1.Tetris, client client.Client, appName stri
 			},
 		}
 
+		cr.Status.NodePortEnabled = true
 		return nil
 	})
 
