@@ -18,12 +18,13 @@ package controller
 
 import (
 	"context"
+	"time"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"k8s.io/apimachinery/pkg/api/errors"
+	"go.openly.dev/pointy"
+	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -31,54 +32,76 @@ import (
 )
 
 var _ = Describe("Tetris Controller", func() {
+
+	// Define tetris constants to use as test
+	const (
+		ResourceName      = "test-tetris"
+		ResourceNamespace = "default"
+		EnableNodePort    = true
+		NodePortValue     = 30003
+		Replicas          = 2
+		Domain            = "customtetrisdomain.com"
+		APIVersion        = "v1alpha1"
+		Kind              = "Tetris"
+	)
+
 	Context("When reconciling a resource", func() {
-		const resourceName = "test-resource"
-
 		ctx := context.Background()
-
-		typeNamespacedName := types.NamespacedName{
-			Name:      resourceName,
-			Namespace: "default", // TODO(user):Modify as needed
-		}
-		tetris := &cachev1alpha1.Tetris{}
+		var tetris *cachev1alpha1.Tetris
 
 		BeforeEach(func() {
 			By("creating the custom resource for the Kind Tetris")
-			err := k8sClient.Get(ctx, typeNamespacedName, tetris)
-			if err != nil && errors.IsNotFound(err) {
-				resource := &cachev1alpha1.Tetris{
-					ObjectMeta: metav1.ObjectMeta{
-						Name:      resourceName,
-						Namespace: "default",
-					},
-					// TODO(user): Specify other spec details if needed.
-				}
-				Expect(k8sClient.Create(ctx, resource)).To(Succeed())
+
+			tetris = &cachev1alpha1.Tetris{
+				TypeMeta: metav1.TypeMeta{
+					APIVersion: APIVersion,
+					Kind:       Kind,
+				},
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      ResourceName,
+					Namespace: ResourceNamespace,
+				},
+				Spec: cachev1alpha1.TetrisSpec{
+					EnableNodePort: pointy.Bool(EnableNodePort),
+					NodePortValue:  pointy.Int32(NodePortValue),
+					Replicas:       pointy.Int32(Replicas),
+					Domain:         pointy.String(Domain),
+				}}
+
+		})
+
+		It("should create CR", func() {
+			Expect(k8sClient.Create(ctx, tetris)).To(Succeed())
+			crKey := types.NamespacedName{Name: tetris.Name, Namespace: tetris.Namespace}
+			createdCR := &cachev1alpha1.Tetris{}
+			Eventually(func() bool {
+				err := k8sClient.Get(ctx, crKey, createdCR)
+				return err == nil
+			}, 10*time.Second, 250*time.Millisecond).Should(BeTrue())
+		})
+
+		It("should create deployment", func() {
+			// Verify the Deployment exists in the cluster.
+			Expect(k8sClient.Create(ctx, tetris)).To(Succeed())
+			deployKey := types.NamespacedName{
+				Name:      tetris.Name + "-deployment", // Add "-deployment" suffix
+				Namespace: tetris.Namespace,
 			}
+			createdDeploy := &appsv1.Deployment{}
+			Eventually(func() bool {
+				err := k8sClient.Get(ctx, deployKey, createdDeploy)
+				return err == nil
+			}, time.Second*10).Should(BeTrue())
 		})
 
 		AfterEach(func() {
-			// TODO(user): Cleanup logic after each test, like removing the resource instance.
 			resource := &cachev1alpha1.Tetris{}
-			err := k8sClient.Get(ctx, typeNamespacedName, resource)
+			deployKey := types.NamespacedName{Name: tetris.Name, Namespace: tetris.Namespace}
+			err := k8sClient.Get(ctx, deployKey, resource)
 			Expect(err).NotTo(HaveOccurred())
 
 			By("Cleanup the specific resource instance Tetris")
 			Expect(k8sClient.Delete(ctx, resource)).To(Succeed())
-		})
-		It("should successfully reconcile the resource", func() {
-			By("Reconciling the created resource")
-			controllerReconciler := &TetrisReconciler{
-				Client: k8sClient,
-				Scheme: k8sClient.Scheme(),
-			}
-
-			_, err := controllerReconciler.Reconcile(ctx, reconcile.Request{
-				NamespacedName: typeNamespacedName,
-			})
-			Expect(err).NotTo(HaveOccurred())
-			// TODO(user): Add more specific assertions depending on your controller's reconciliation logic.
-			// Example: If you expect a certain status condition after reconciliation, verify it here.
 		})
 	})
 })

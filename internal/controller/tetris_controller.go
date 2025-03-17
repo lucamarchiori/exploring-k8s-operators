@@ -82,7 +82,7 @@ func (r *TetrisReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctr
 
 func (r *TetrisReconciler) EnsureTetris(cr *cachev1alpha1.Tetris, cl client.Client, scheme *runtime.Scheme) (err error) {
 	fmt.Println("TetrisReconciler: Ensure Tetris")
-	appName := "tetris"
+	appName := cr.Name
 	labels := map[string]string{"app": appName}
 	matchLabels := map[string]string{"app": appName}
 
