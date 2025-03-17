@@ -23,6 +23,8 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"go.openly.dev/pointy"
+	v1 "k8s.io/api/core/v1"
+
 	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/types"
 
@@ -68,10 +70,10 @@ var _ = Describe("Tetris Controller", func() {
 					Domain:         pointy.String(Domain),
 				}}
 
+			Expect(k8sClient.Create(ctx, tetris)).To(Succeed())
 		})
 
 		It("should create CR", func() {
-			Expect(k8sClient.Create(ctx, tetris)).To(Succeed())
 			crKey := types.NamespacedName{Name: tetris.Name, Namespace: tetris.Namespace}
 			createdCR := &cachev1alpha1.Tetris{}
 			Eventually(func() bool {
@@ -81,8 +83,6 @@ var _ = Describe("Tetris Controller", func() {
 		})
 
 		It("should create deployment", func() {
-			// Verify the Deployment exists in the cluster.
-			Expect(k8sClient.Create(ctx, tetris)).To(Succeed())
 			deployKey := types.NamespacedName{
 				Name:      tetris.Name + "-deployment", // Add "-deployment" suffix
 				Namespace: tetris.Namespace,
@@ -90,6 +90,18 @@ var _ = Describe("Tetris Controller", func() {
 			createdDeploy := &appsv1.Deployment{}
 			Eventually(func() bool {
 				err := k8sClient.Get(ctx, deployKey, createdDeploy)
+				return err == nil
+			}, time.Second*10).Should(BeTrue())
+		})
+
+		It("should create NodePort", func() {
+			deployKey := types.NamespacedName{
+				Name:      tetris.Name + "-nodeport", // Add "-deployment" suffix
+				Namespace: tetris.Namespace,
+			}
+			np := &v1.Service{}
+			Eventually(func() bool {
+				err := k8sClient.Get(ctx, deployKey, np)
 				return err == nil
 			}, time.Second*10).Should(BeTrue())
 		})
