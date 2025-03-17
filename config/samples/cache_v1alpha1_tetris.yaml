@@ -6,7 +6,7 @@ metadata:
     app.kubernetes.io/managed-by: kustomize
   name: tetris-sample
 spec:
-  replicas: 3
+  replicas: 2
   enableNodePort: false
   nodePortValue: 30003
   domain: customtetrisdomain.com

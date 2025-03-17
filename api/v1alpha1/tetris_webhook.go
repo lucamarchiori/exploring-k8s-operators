@@ -17,6 +17,8 @@ limitations under the License.
 package v1alpha1
 
 import (
+	"errors"
+
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
@@ -59,6 +61,12 @@ func (r *Tetris) ValidateCreate() (admission.Warnings, error) {
 	tetrislog.Info("validate create", "name", r.Name)
 
 	// TODO(user): fill in your validation logic upon object creation.
+
+	err := checkReplicasNumber(int(*r.Spec.Replicas))
+	if err != nil {
+		return nil, err
+	}
+
 	return nil, nil
 }
 
@@ -67,6 +75,12 @@ func (r *Tetris) ValidateUpdate(old runtime.Object) (admission.Warnings, error) 
 	tetrislog.Info("validate update", "name", r.Name)
 
 	// TODO(user): fill in your validation logic upon object update.
+
+	err := checkReplicasNumber(int(*r.Spec.Replicas))
+	if err != nil {
+		return nil, err
+	}
+
 	return nil, nil
 }
 
@@ -76,4 +90,14 @@ func (r *Tetris) ValidateDelete() (admission.Warnings, error) {
 
 	// TODO(user): fill in your validation logic upon object deletion.
 	return nil, nil
+}
+
+// Ensure that the number of replicas requested is between 1 and 5
+func checkReplicasNumber(replicas int) (err error) {
+	if replicas >= 1 && replicas <= 5 {
+		return nil
+	}
+
+	return errors.New("The number of replicas must be between 1 and 5")
+
 }
