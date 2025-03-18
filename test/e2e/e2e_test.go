@@ -28,29 +28,34 @@ import (
 )
 
 const namespace = "tetris-operator-system"
+const clustername = "tetris-operator-testing-cluster"
 
 var _ = Describe("controller", Ordered, func() {
 	BeforeAll(func() {
-		By("installing prometheus operator")
-		Expect(utils.InstallPrometheusOperator()).To(Succeed())
+
+		// By("installing prometheus operator")
+		// Expect(utils.InstallPrometheusOperator()).To(Succeed())
+
+		By("create kind cluster for test")
+		cmd := exec.Command("kind", "create", "cluster", "-n", clustername)
+		_, _ = utils.Run(cmd)
+
+		By("switch k8s context to test cluster")
+		cmd = exec.Command("kubectl", "config", "use-context", clustername)
+		_, _ = utils.Run(cmd)
 
 		By("installing the cert-manager")
 		Expect(utils.InstallCertManager()).To(Succeed())
 
 		By("creating manager namespace")
-		cmd := exec.Command("kubectl", "create", "ns", namespace)
+		cmd = exec.Command("kubectl", "create", "ns", namespace)
 		_, _ = utils.Run(cmd)
+
 	})
 
 	AfterAll(func() {
-		By("uninstalling the Prometheus manager bundle")
-		utils.UninstallPrometheusOperator()
-
-		By("uninstalling the cert-manager bundle")
-		utils.UninstallCertManager()
-
-		By("removing manager namespace")
-		cmd := exec.Command("kubectl", "delete", "ns", namespace)
+		By("delete kind cluster for test")
+		cmd := exec.Command("kind", "delete", clustername)
 		_, _ = utils.Run(cmd)
 	})
 
@@ -62,18 +67,23 @@ var _ = Describe("controller", Ordered, func() {
 			// projectimage stores the name of the image used in the example
 			var projectimage = "example.com/tetris-operator:v0.0.1"
 
+			By("installing the operator CRD")
+			cmd := exec.Command("make", "install", fmt.Sprintf("IMG=%s", projectimage))
+			_, err = utils.Run(cmd)
+			ExpectWithOffset(1, err).NotTo(HaveOccurred())
+
 			By("building the manager(Operator) image")
-			cmd := exec.Command("make", "docker-build", fmt.Sprintf("IMG=%s", projectimage))
+			cmd = exec.Command("make", "docker-build", fmt.Sprintf("IMG=%s", projectimage))
+			_, err = utils.Run(cmd)
+			ExpectWithOffset(1, err).NotTo(HaveOccurred())
+
+			By("building the manager(Operator) image")
+			cmd = exec.Command("make", "install")
 			_, err = utils.Run(cmd)
 			ExpectWithOffset(1, err).NotTo(HaveOccurred())
 
 			By("loading the the manager(Operator) image on Kind")
-			err = utils.LoadImageToKindClusterWithName(projectimage)
-			ExpectWithOffset(1, err).NotTo(HaveOccurred())
-
-			By("installing CRDs")
-			cmd = exec.Command("make", "install")
-			_, err = utils.Run(cmd)
+			err = utils.LoadImageToKindClusterWithName(projectimage, clustername)
 			ExpectWithOffset(1, err).NotTo(HaveOccurred())
 
 			By("deploying the controller-manager")
@@ -87,21 +97,19 @@ var _ = Describe("controller", Ordered, func() {
 
 				cmd = exec.Command("kubectl", "get",
 					"pods", "-l", "control-plane=controller-manager",
-					"-o", "go-template={{ range .items }}"+
-						"{{ if not .metadata.deletionTimestamp }}"+
-						"{{ .metadata.name }}"+
+					"-o", "go-template={{ range .items }}{{ if not .metadata.deletionTimestamp }}{{ .metadata.name }}"+
 						"{{ \"\\n\" }}{{ end }}{{ end }}",
 					"-n", namespace,
 				)
 
 				podOutput, err := utils.Run(cmd)
-				ExpectWithOffset(2, err).NotTo(HaveOccurred())
+				ExpectWithOffset(1, err).NotTo(HaveOccurred())
 				podNames := utils.GetNonEmptyLines(string(podOutput))
 				if len(podNames) != 1 {
 					return fmt.Errorf("expect 1 controller pods running, but got %d", len(podNames))
 				}
 				controllerPodName = podNames[0]
-				ExpectWithOffset(2, controllerPodName).Should(ContainSubstring("controller-manager"))
+				ExpectWithOffset(1, controllerPodName).Should(ContainSubstring("controller-manager"))
 
 				// Validate pod status
 				cmd = exec.Command("kubectl", "get",
@@ -109,7 +117,7 @@ var _ = Describe("controller", Ordered, func() {
 					"-n", namespace,
 				)
 				status, err := utils.Run(cmd)
-				ExpectWithOffset(2, err).NotTo(HaveOccurred())
+				ExpectWithOffset(1, err).NotTo(HaveOccurred())
 				if string(status) != "Running" {
 					return fmt.Errorf("controller pod in %s status", status)
 				}

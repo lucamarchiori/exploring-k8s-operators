@@ -104,8 +104,7 @@ func InstallCertManager() error {
 }
 
 // LoadImageToKindClusterWithName loads a local docker image to the kind cluster
-func LoadImageToKindClusterWithName(name string) error {
-	cluster := "kind"
+func LoadImageToKindClusterWithName(name string, cluster string) error {
 	if v, ok := os.LookupEnv("KIND_CLUSTER"); ok {
 		cluster = v
 	}

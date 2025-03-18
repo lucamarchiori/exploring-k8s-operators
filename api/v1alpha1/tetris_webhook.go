@@ -22,7 +22,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
-	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
 
@@ -40,8 +39,6 @@ func (r *Tetris) SetupWebhookWithManager(mgr ctrl.Manager) error {
 
 // +kubebuilder:webhook:path=/mutate-cache-tetris-operator-secomind-com-v1alpha1-tetris,mutating=true,failurePolicy=fail,sideEffects=None,groups=cache.tetris-operator.secomind.com,resources=tetris,verbs=create;update,versions=v1alpha1,name=mtetris.kb.io,admissionReviewVersions=v1
 
-var _ webhook.Defaulter = &Tetris{}
-
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (r *Tetris) Default() {
 	tetrislog.Info("default", "name", r.Name)
@@ -53,8 +50,6 @@ func (r *Tetris) Default() {
 // NOTE: The 'path' attribute must follow a specific pattern and should not be modified directly here.
 // Modifying the path for an invalid path can cause API server errors; failing to locate the webhook.
 // +kubebuilder:webhook:path=/validate-cache-tetris-operator-secomind-com-v1alpha1-tetris,mutating=false,failurePolicy=fail,sideEffects=None,groups=cache.tetris-operator.secomind.com,resources=tetris,verbs=create;update,versions=v1alpha1,name=vtetris.kb.io,admissionReviewVersions=v1
-
-var _ webhook.Validator = &Tetris{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *Tetris) ValidateCreate() (admission.Warnings, error) {
