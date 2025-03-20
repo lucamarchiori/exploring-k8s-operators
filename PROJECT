@@ -21,6 +21,7 @@ resources:
   path: tetris-operator.github.com/api/v1alpha1
   version: v1alpha1
   webhooks:
+    conversion: true
     defaulting: true
     validation: true
     webhookVersion: v1

@@ -51,7 +51,7 @@ type TetrisStatus struct {
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
-
+// +kubebuilder:storageversion
 // Tetris is the Schema for the tetris API
 type Tetris struct {
 	metav1.TypeMeta   `json:",inline"`

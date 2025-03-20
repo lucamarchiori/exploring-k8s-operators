@@ -27,15 +27,30 @@ import (
 type TetrisSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default:=1
+	Replicas *int32 `json:"replicas,omitempty"`
+	// +kubebuilder:validation:Required
+	Domain   *string   `json:"domain,omitempty"`
+	NodePort *NodePort `json:"nodePort,omitempty"`
+}
 
-	// Foo is an example field of Tetris. Edit tetris_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+type NodePort struct {
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default:=false
+	Enabled *bool `json:"enabled,omitempty"`
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:validation:Minimum:=30000
+	// +kubebuilder:validation:Maximum:=32767
+	Port *int32 `json:"nodePortValue,omitempty"`
 }
 
 // TetrisStatus defines the observed state of Tetris
 type TetrisStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	// Important: Run "make" to regenerate code after modifying this filek de
+	// Crea status custome che tiene d'occhio repliche e host su cui è esposto ingress
+	NodePortEnabled bool `json:"nodePortEnabled,omitempty"`
 }
 
 // +kubebuilder:object:root=true
@@ -51,7 +66,6 @@ type Tetris struct {
 }
 
 // +kubebuilder:object:root=true
-
 // TetrisList contains a list of Tetris
 type TetrisList struct {
 	metav1.TypeMeta `json:",inline"`
