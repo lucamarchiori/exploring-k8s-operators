@@ -1,0 +1,30 @@
+# Adds namespace to all resources.
+namespace: tetris-operator-system
+
+# Value of this field is prepended to the
+# names of all resources, e.g. a deployment named
+# "wordpress" becomes "alices-wordpress".
+# Note that it should also match with the prefix (text before '-') of the namespace
+# field above.
+namePrefix: tetris-operator-
+bases:
+  - ../crd
+  # crd/kustomization.yaml
+  - ../webhook
+  # you might not need certmanager, that's what I use in my local config
+  - ../certmanager
+
+patchesJson6902:
+  - target:
+      group: admissionregistration.k8s.io
+      version: v1
+      kind: MutatingWebhookConfiguration
+      name: mutating-webhook-configuration
+    path: mutating_webhook_patch.yaml
+  - target:
+      group: admissionregistration.k8s.io
+      version: v1
+      kind: ValidatingWebhookConfiguration
+      name: validating-webhook-configuration
+    path: validating_webhook_patch.yaml
+  # We also have conversion webhooks for CRDs when using multi-version APIs if you need, I removed it from this snippet since you might not need it

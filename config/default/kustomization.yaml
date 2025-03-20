@@ -50,11 +50,11 @@ patches:
 # 'CERTMANAGER' needs to be enabled to use ca injection
 - path: webhookcainjection_patch.yaml
 
-# Set imagePullPolicy to Never
+# Set imagePullPolicy to IfNotPresent
 - patch: |-
     - op: replace
       path: /spec/template/spec/containers/0/imagePullPolicy
-      value: Never
+      value: IfNotPresent
   target:
     kind: Deployment
 

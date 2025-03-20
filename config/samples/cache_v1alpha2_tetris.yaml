@@ -1,0 +1,9 @@
+apiVersion: cache.tetris-operator.secomind.com/v1alpha2
+kind: Tetris
+metadata:
+  labels:
+    app.kubernetes.io/name: tetris-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: tetris-sample
+spec:
+  # TODO(user): Add fields here

@@ -204,9 +204,11 @@ func deleteNodePort(cr *cachev1alpha1.Tetris, cl client.Client, appName string) 
 	nodePortName := fmt.Sprintf("%s-nodeport", appName)
 	nodePort := &v1.Service{ObjectMeta: metav1.ObjectMeta{Name: nodePortName, Namespace: cr.Namespace}}
 	err := cl.Delete(context.Background(), nodePort)
+
 	if err != nil && !errors.IsNotFound(err) {
 		return err
 	}
+
 	fmt.Println("TetrisReconciler: Successfully deleted NodePort")
 	return nil
 }
@@ -219,7 +221,6 @@ func (r *TetrisReconciler) SetupWithManager(mgr ctrl.Manager) error {
 }
 
 func ensureNodePort(cr *cachev1alpha1.Tetris, c client.Client, appName string, labels map[string]string, matchLabels map[string]string) (err error) {
-
 	nodePortName := fmt.Sprintf("%s-nodeport", appName)
 	nodePort := &v1.Service{ObjectMeta: metav1.ObjectMeta{Name: nodePortName, Namespace: cr.Namespace}}
 
@@ -320,5 +321,4 @@ func tetrisPodSpec() (podSpec v1.PodSpec) {
 	}
 
 	return podSpec
-
 }
