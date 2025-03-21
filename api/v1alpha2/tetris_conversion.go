@@ -8,23 +8,51 @@ import (
 // ConvertTo converts this Tetris to the Hub version (v1alpha1).
 func (src *Tetris) ConvertTo(dstRaw conversion.Hub) error {
 	dst := dstRaw.(*v1alpha1.Tetris)
+
+	// Copy metadata with deep copy
+	src.ObjectMeta.DeepCopyInto(&dst.ObjectMeta) // Remove redundant assignment
+
+	// Copy scalar fields
 	dst.Spec.Domain = src.Spec.Domain
-	dst.Spec.EnableNodePort = src.Spec.NodePort.Enabled
-	dst.Spec.NodePortValue = src.Spec.NodePort.Port
 	dst.Spec.Replicas = src.Spec.Replicas
 	dst.Status.NodePortEnabled = src.Status.NodePortEnabled
-	dst.ObjectMeta = src.ObjectMeta
+
+	// Handle NodePort conversion
+	if src.Spec.NodePort != nil {
+		dst.Spec.EnableNodePort = src.Spec.NodePort.Enabled
+		dst.Spec.NodePortValue = src.Spec.NodePort.Port
+	} else {
+		dst.Spec.EnableNodePort = nil
+		dst.Spec.NodePortValue = nil
+	}
+
 	return nil
 }
 
 // ConvertFrom converts from the Hub version (v1alpha1) to this version.
 func (dst *Tetris) ConvertFrom(srcRaw conversion.Hub) error {
 	src := srcRaw.(*v1alpha1.Tetris)
+
+	// Copy metadata with deep copy
+	src.ObjectMeta.DeepCopyInto(&dst.ObjectMeta)
+
+	// Copy scalar fields
 	dst.Spec.Domain = src.Spec.Domain
-	dst.Spec.NodePort.Enabled = src.Spec.EnableNodePort
-	dst.Spec.NodePort.Port = src.Spec.NodePortValue
 	dst.Spec.Replicas = src.Spec.Replicas
 	dst.Status.NodePortEnabled = src.Status.NodePortEnabled
-	dst.ObjectMeta = src.ObjectMeta
+
+	// Initialize NodePort if needed
+	if dst.Spec.NodePort == nil {
+		dst.Spec.NodePort = &NodePort{}
+	}
+
+	// Handle potential nil values in source
+	if src.Spec.EnableNodePort != nil {
+		dst.Spec.NodePort.Enabled = src.Spec.EnableNodePort
+	}
+	if src.Spec.NodePortValue != nil {
+		dst.Spec.NodePort.Port = src.Spec.NodePortValue
+	}
+
 	return nil
 }

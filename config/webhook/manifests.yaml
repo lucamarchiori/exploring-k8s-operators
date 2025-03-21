@@ -24,6 +24,26 @@ webhooks:
     resources:
     - tetris
   sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /mutate-cache-tetris-operator-secomind-com-v1alpha2-tetris
+  failurePolicy: Fail
+  name: mtetris.kb.io
+  rules:
+  - apiGroups:
+    - cache.tetris-operator.secomind.com
+    apiVersions:
+    - v1alpha2
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - tetris
+  sideEffects: None
 ---
 apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
@@ -47,6 +67,28 @@ webhooks:
     operations:
     - CREATE
     - UPDATE
+    - DELETE
+    resources:
+    - tetris
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-cache-tetris-operator-secomind-com-v1alpha2-tetris
+  failurePolicy: Fail
+  name: vtetris.kb.io
+  rules:
+  - apiGroups:
+    - cache.tetris-operator.secomind.com
+    apiVersions:
+    - v1alpha2
+    operations:
+    - CREATE
+    - UPDATE
+    - DELETE
     resources:
     - tetris
   sideEffects: None

@@ -35,21 +35,10 @@ type TetrisSpec struct {
 	NodePort *NodePort `json:"nodePort,omitempty"`
 }
 
-type NodePort struct {
-	// +kubebuilder:validation:Optional
-	// +kubebuilder:default:=false
-	Enabled *bool `json:"enabled,omitempty"`
-	// +kubebuilder:validation:Optional
-	// +kubebuilder:validation:Minimum:=30000
-	// +kubebuilder:validation:Maximum:=32767
-	Port *int32 `json:"port,omitempty"`
-}
-
 // TetrisStatus defines the observed state of Tetris
 type TetrisStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this filek de
-	// Crea status custome che tiene d'occhio repliche e host su cui è esposto ingress
+	// Important: Run "make" to regenerate code after modifying this file
 	NodePortEnabled bool `json:"nodePortEnabled,omitempty"`
 }
 
@@ -65,7 +54,18 @@ type Tetris struct {
 	Status TetrisStatus `json:"status,omitempty"`
 }
 
+type NodePort struct {
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:default:=false
+	Enabled *bool `json:"enabled,omitempty"`
+	// +kubebuilder:validation:Optional
+	// +kubebuilder:validation:Minimum:=30000
+	// +kubebuilder:validation:Maximum:=32767
+	Port *int32 `json:"port,omitempty"`
+}
+
 // +kubebuilder:object:root=true
+
 // TetrisList contains a list of Tetris
 type TetrisList struct {
 	metav1.TypeMeta `json:",inline"`

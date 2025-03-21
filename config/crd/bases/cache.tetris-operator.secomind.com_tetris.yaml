@@ -44,7 +44,7 @@ spec:
               enableNodePort:
                 default: false
                 description: |-
-                  INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
+                  INSERT ADDITIONAL SPEC FIELDS - desire\d state of cluster
                   Important: Run "make" to regenerate code after modifying this file
                 type: boolean
               nodePortValue:
@@ -128,8 +128,7 @@ spec:
               nodePortEnabled:
                 description: |-
                   INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-                  Important: Run "make" to regenerate code after modifying this filek de
-                  Crea status custome che tiene d'occhio repliche e host su cui è esposto ingress
+                  Important: Run "make" to regenerate code after modifying this file
                 type: boolean
             type: object
         type: object

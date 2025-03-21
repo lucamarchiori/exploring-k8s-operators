@@ -21,8 +21,18 @@ resources:
   path: tetris-operator.github.com/api/v1alpha1
   version: v1alpha1
   webhooks:
-    conversion: true
     defaulting: true
     validation: true
+    webhookVersion: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  domain: tetris-operator.secomind.com
+  group: cache
+  kind: Tetris
+  path: tetris-operator.github.com/api/v1alpha2
+  version: v1alpha2
+  webhooks:
+    conversion: true
     webhookVersion: v1
 version: "3"

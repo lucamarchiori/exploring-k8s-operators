@@ -36,6 +36,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
 	cachev1alpha1 "tetris-operator.github.com/api/v1alpha1"
+	cachev1alpha2 "tetris-operator.github.com/api/v1alpha2"
 	"tetris-operator.github.com/internal/controller"
 	// +kubebuilder:scaffold:imports
 )
@@ -49,6 +50,7 @@ func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
 	utilruntime.Must(cachev1alpha1.AddToScheme(scheme))
+	utilruntime.Must(cachev1alpha2.AddToScheme(scheme))
 	// +kubebuilder:scaffold:scheme
 }
 
@@ -151,8 +153,18 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "Tetris")
 		os.Exit(1)
 	}
+
+	// nolint:goconst
 	if os.Getenv("ENABLE_WEBHOOKS") != "false" {
 		if err = (&cachev1alpha1.Tetris{}).SetupWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "Tetris")
+			os.Exit(1)
+		}
+	}
+
+	// nolint:goconst
+	if os.Getenv("ENABLE_WEBHOOKS") != "false" {
+		if err = (&cachev1alpha2.Tetris{}).SetupWebhookWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create webhook", "webhook", "Tetris")
 			os.Exit(1)
 		}

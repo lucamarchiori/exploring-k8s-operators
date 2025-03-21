@@ -25,7 +25,7 @@ import (
 
 // TetrisSpec defines the desired state of Tetris
 type TetrisSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
+	// INSERT ADDITIONAL SPEC FIELDS - desire\d state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 	// +kubebuilder:validation:Optional
 	// +kubebuilder:default:=false
@@ -51,7 +51,10 @@ type TetrisStatus struct {
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
+// +kubebuilder:conversion:hub
 // +kubebuilder:storageversion
+// +versionName=v1alpha1
+
 // Tetris is the Schema for the tetris API
 type Tetris struct {
 	metav1.TypeMeta   `json:",inline"`
