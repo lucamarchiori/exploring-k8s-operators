@@ -106,7 +106,7 @@ spec:
                   enabled:
                     default: false
                     type: boolean
-                  nodePortValue:
+                  port:
                     format: int32
                     maximum: 32767
                     minimum: 30000

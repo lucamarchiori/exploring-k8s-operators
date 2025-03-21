@@ -42,7 +42,7 @@ type NodePort struct {
 	// +kubebuilder:validation:Optional
 	// +kubebuilder:validation:Minimum:=30000
 	// +kubebuilder:validation:Maximum:=32767
-	Port *int32 `json:"nodePortValue,omitempty"`
+	Port *int32 `json:"port,omitempty"`
 }
 
 // TetrisStatus defines the observed state of Tetris
