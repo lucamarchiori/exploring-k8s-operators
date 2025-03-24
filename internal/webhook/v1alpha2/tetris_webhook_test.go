@@ -2,13 +2,13 @@ package v1alpha2
 
 import (
 	. "github.com/onsi/gomega"
+	"go.openly.dev/pointy"
 	"tetris-operator.github.com/api/v1alpha1"
 	"tetris-operator.github.com/api/v1alpha2"
 
 	. "github.com/onsi/ginkgo/v2"
 	"k8s.io/apimachinery/pkg/api/equality"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/utils/pointer"
 )
 
 var _ = Describe("Tetris Webhook", func() {
@@ -22,10 +22,10 @@ var _ = Describe("Tetris Webhook", func() {
 						Name: "test-tetris",
 					},
 					Spec: v1alpha1.TetrisSpec{
-						Replicas:       pointer.Int32(3),
-						Domain:         pointer.String("example.com"),
-						EnableNodePort: pointer.Bool(true),
-						NodePortValue:  pointer.Int32(31000),
+						Replicas:       pointy.Int32(3),
+						Domain:         pointy.String("example.com"),
+						EnableNodePort: pointy.Bool(true),
+						NodePortValue:  pointy.Int32(31000),
 					},
 				}
 
