@@ -39,6 +39,10 @@ var _ = Describe("Tetris Webhook", func() {
 
 				// Step 4: Compare original and converted-back objects
 				Expect(equality.Semantic.DeepEqual(v1alpha1Obj, convertedBack)).To(BeTrue())
+
+				// Manual check
+				Expect(pointy.PointersValueEqual(v1alpha1Obj.Spec.NodePortValue, v1alpha2Obj.Spec.NodePort.Port)).To(BeTrue())
+
 			})
 		})
 	})
