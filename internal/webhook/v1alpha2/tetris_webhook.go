@@ -30,8 +30,8 @@ var _ webhook.CustomValidator = &TetrisCustomValidator{}
 var _ webhook.CustomDefaulter = &TetrisCustomDefaulter{}
 
 // SetupWebhookWithManager will setup the manager to manage the webhooks
-// +kubebuilder:webhook:path=/mutate-cache-tetris-operator-secomind-com-v1alpha2-tetris,mutating=true,failurePolicy=fail,sideEffects=None,groups=cache.tetris-operator.secomind.com,resources=tetris,verbs=create;update,versions=v1alpha2,name=mtetris.kb.io,admissionReviewVersions=v1
-// +kubebuilder:webhook:verbs=create;update;delete,path=/validate-cache-tetris-operator-secomind-com-v1alpha2-tetris,mutating=false,failurePolicy=fail,groups=cache.tetris-operator.secomind.com,resources=tetris,versions=v1alpha2,name=vtetris.kb.io,sideEffects=None,admissionReviewVersions=v1
+// +kubebuilder:webhook:path=/mutate-cache-tetris-operator-secomind-com-v1alpha2-tetris,mutating=true,failurePolicy=fail,sideEffects=None,groups=cache.tetris-operator.secomind.com,resources=tetris,verbs=create;update,versions=v1alpha2,name=mv1alpha2tetris.kb.io,admissionReviewVersions=v1
+// +kubebuilder:webhook:verbs=create;update;delete,path=/validate-cache-tetris-operator-secomind-com-v1alpha2-tetris,mutating=false,failurePolicy=fail,groups=cache.tetris-operator.secomind.com,resources=tetris,versions=v1alpha2,name=vv1alpha2tetris.kb.io,sideEffects=None,admissionReviewVersions=v1
 
 func SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).

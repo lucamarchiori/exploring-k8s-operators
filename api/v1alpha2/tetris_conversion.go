@@ -1,12 +1,16 @@
 package v1alpha2
 
 import (
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/conversion"
 	"tetris-operator.github.com/api/v1alpha1"
 )
 
 // ConvertTo converts this Tetris to the Hub version (v1alpha1).
 func (src *Tetris) ConvertTo(dstRaw conversion.Hub) error {
+	setupLog := ctrl.Log.WithName("setup")
+	setupLog.Info("Converting from v1alpha2 to v1alpha1")
+
 	dst := dstRaw.(*v1alpha1.Tetris)
 
 	// Copy metadata with deep copy
@@ -31,6 +35,8 @@ func (src *Tetris) ConvertTo(dstRaw conversion.Hub) error {
 
 // ConvertFrom converts from the Hub version (v1alpha1) to this version.
 func (dst *Tetris) ConvertFrom(srcRaw conversion.Hub) error {
+	setupLog := ctrl.Log.WithName("setup")
+	setupLog.Info("Converting from v1alpha1 to v1alpha2")
 	src := srcRaw.(*v1alpha1.Tetris)
 
 	// Copy metadata with deep copy

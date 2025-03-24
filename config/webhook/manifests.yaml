@@ -12,7 +12,7 @@ webhooks:
       namespace: system
       path: /mutate-cache-tetris-operator-secomind-com-v1alpha1-tetris
   failurePolicy: Fail
-  name: mtetris.kb.io
+  name: mv1alpha1tetris.kb.io
   rules:
   - apiGroups:
     - cache.tetris-operator.secomind.com
@@ -32,7 +32,7 @@ webhooks:
       namespace: system
       path: /mutate-cache-tetris-operator-secomind-com-v1alpha2-tetris
   failurePolicy: Fail
-  name: mtetris.kb.io
+  name: mv1alpha2tetris.kb.io
   rules:
   - apiGroups:
     - cache.tetris-operator.secomind.com
@@ -58,7 +58,7 @@ webhooks:
       namespace: system
       path: /validate-cache-tetris-operator-secomind-com-v1alpha1-tetris
   failurePolicy: Fail
-  name: vtetris.kb.io
+  name: vv1alpha1tetris.kb.io
   rules:
   - apiGroups:
     - cache.tetris-operator.secomind.com
@@ -79,7 +79,7 @@ webhooks:
       namespace: system
       path: /validate-cache-tetris-operator-secomind-com-v1alpha2-tetris
   failurePolicy: Fail
-  name: vtetris.kb.io
+  name: vv1alpha2tetris.kb.io
   rules:
   - apiGroups:
     - cache.tetris-operator.secomind.com
