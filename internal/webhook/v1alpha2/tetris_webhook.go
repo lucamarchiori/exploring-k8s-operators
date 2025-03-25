@@ -53,7 +53,7 @@ func (d *TetrisCustomDefaulter) Default(ctx context.Context, obj runtime.Object)
 	t, ok := obj.(*apiv1alpha2.Tetris)
 
 	if !ok {
-		return fmt.Errorf("expected an CronJob object but got %T", obj)
+		return fmt.Errorf("expected an Tetris object but got %T", obj)
 	}
 
 	// Set default values
@@ -61,20 +61,20 @@ func (d *TetrisCustomDefaulter) Default(ctx context.Context, obj runtime.Object)
 	return nil
 }
 
-func (d *TetrisCustomDefaulter) applyDefaults(cronJob *apiv1alpha2.Tetris) {
+func (d *TetrisCustomDefaulter) applyDefaults(t *apiv1alpha2.Tetris) {
 	// Set default Replicas if not specified
-	if cronJob.Spec.Replicas == nil {
-		cronJob.Spec.Replicas = pointy.Int32(d.Replicas)
+	if t.Spec.Replicas == nil {
+		t.Spec.Replicas = pointy.Int32(d.Replicas)
 	}
 
 	// Set default Domain if not specified
-	if cronJob.Spec.Domain == nil {
-		cronJob.Spec.Domain = pointy.String(d.Domain)
+	if t.Spec.Domain == nil {
+		t.Spec.Domain = pointy.String(d.Domain)
 	}
 
 	// Initialize Service if nil
-	if cronJob.Spec.NodePort == nil {
-		cronJob.Spec.NodePort = &apiv1alpha2.NodePort{
+	if t.Spec.NodePort == nil {
+		t.Spec.NodePort = &apiv1alpha2.NodePort{
 			Enabled: pointy.Bool(*d.Nodeport.Enabled),
 			Port:    pointy.Int32(*d.Nodeport.Port),
 		}
@@ -83,20 +83,21 @@ func (d *TetrisCustomDefaulter) applyDefaults(cronJob *apiv1alpha2.Tetris) {
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *TetrisCustomValidator) ValidateCreate(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
-	// TODO(user): fill in your validation logic upon object creation.
-
+	// Fill in your validation logic
+	// For the moment these kind of validations are provided with markers instead of webhooks.
 	return nil, nil
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *TetrisCustomValidator) ValidateUpdate(ctx context.Context, oldObj, newObj runtime.Object) (admission.Warnings, error) {
-	// TODO(user): fill in your validation logic upon object update.
-
+	// Fill in your validation logic
+	// For the moment these kind of validations are provided with markers instead of webhooks.
 	return nil, nil
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
 func (r *TetrisCustomValidator) ValidateDelete(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
-	// TODO(user): fill in your validation logic upon object deletion.
+	// Fill in your validation logic
+	// For the moment these kind of validations are provided with markers instead of webhooks.
 	return nil, nil
 }

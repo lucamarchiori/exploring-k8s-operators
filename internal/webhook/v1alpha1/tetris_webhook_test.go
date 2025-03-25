@@ -59,8 +59,4 @@ var _ = Describe("Tetris Webhook", func() {
 
 		})
 	})
-	Context("When creating Tetris under Conversion Webhook", func() {
-
-	})
-
 })

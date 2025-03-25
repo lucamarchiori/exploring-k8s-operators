@@ -45,7 +45,7 @@ func (d *TetrisCustomDefaulter) Default(ctx context.Context, obj runtime.Object)
 	cronjob, ok := obj.(*apiv1alpha1.Tetris)
 
 	if !ok {
-		return fmt.Errorf("expected an CronJob object but got %T", obj)
+		return fmt.Errorf("expected an Tetris object but got %T", obj)
 	}
 
 	// Set default values
@@ -53,7 +53,7 @@ func (d *TetrisCustomDefaulter) Default(ctx context.Context, obj runtime.Object)
 	return nil
 }
 
-// applyDefaults applies default values to CronJob fields.
+// applyDefaults applies default values to Tetris fields.
 func (d *TetrisCustomDefaulter) applyDefaults(t *apiv1alpha1.Tetris) {
 	// Set default Replicas if not specified
 	if t.Spec.Replicas == nil {
@@ -86,20 +86,21 @@ var _ webhook.CustomValidator = &TetrisCustomValidator{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *TetrisCustomValidator) ValidateCreate(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
-	// TODO(user): fill in your validation logic upon object creation.
-
+	// Fill in your validation logic
+	// For the moment these kind of validations are provided with markers instead of webhooks.
 	return nil, nil
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *TetrisCustomValidator) ValidateUpdate(ctx context.Context, oldObj, newObj runtime.Object) (admission.Warnings, error) {
-	// TODO(user): fill in your validation logic upon object update.
-
+	// Fill in your validation logic
+	// For the moment these kind of validations are provided with markers instead of webhooks.
 	return nil, nil
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
 func (r *TetrisCustomValidator) ValidateDelete(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
-	// TODO(user): fill in your validation logic upon object deletion.
+	// Fill in your validation logic
+	// For the moment these kind of validations are provided with markers instead of webhooks.
 	return nil, nil
 }

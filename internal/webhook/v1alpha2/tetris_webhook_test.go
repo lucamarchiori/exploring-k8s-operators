@@ -42,7 +42,6 @@ var _ = Describe("Tetris Webhook", func() {
 
 				// Manual check
 				Expect(pointy.PointersValueEqual(v1alpha1Obj.Spec.NodePortValue, v1alpha2Obj.Spec.NodePort.Port)).To(BeTrue())
-
 			})
 		})
 	})
